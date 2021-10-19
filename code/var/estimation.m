@@ -6,11 +6,14 @@
 % surprises and identifies shocks with sign restrictions.
 % The different results in the paper can be obtained by uncommenting the
 % appropriate lines.
-clear all, close all
 rng('shuffle');
+clear all
+close all
+
+addpath(genpath('toolbox/'));
 
 % SAMPLE AND DATA: spl, modname, addvar
-spl = [1999 1; 2019 12];
+spl = [1999 1; 2007 12];
 %spl = [1984 2; 2008 12];% Dec2008 ZLB reached
 %spl = [1990 2; 2016 12];% Feb1999 surprises start
 %spl = [1979 7; 2016 12];% GertlerKaradi2015 sample 
@@ -54,7 +57,7 @@ ymdif = @(x1,x2) (x2(1)-x1(1))*12+x2(2)-x1(2);
 findym = @(x,t) find(abs(t-ym2t(x))<1e-6); % find [year month] in time vector t
 
 % Gibbs sampler settings
-gssettings.ndraws = 2000;
+gssettings.ndraws = 4000;
 gssettings.burnin = 4000;
 gssettings.saveevery = 1;
 gssettings.computemarglik = 0;
@@ -78,7 +81,7 @@ mylimits = nan(length(mnames),2);
 ny1 = 6;
 switch modname
     case 'us1'
-        ynames = {'r1y_eu','gdp','def','ice', 'eur_usd', 'r1y_us'};
+        ynames = {'r1y_eu','gdp','def','ice', 'neer', 'rstar'};
     case 'us2'
         ynames = {'gs1','logsp500','us_ip','us_cpi','ebpnew'};
     case 'ea1'
@@ -98,7 +101,7 @@ if ~isempty(addvar)
 end
 
 % nice_names, yylimits, nonst
-dictfname = '../../data/output/ydict.csv';
+dictfname = '../data/output/ydict.csv';
 fileID = fopen(dictfname);
 ydict = textscan(fileID,'%s %q %d %f %f','Delimiter',',','HeaderLines',1);
 fclose(fileID);
@@ -109,7 +112,7 @@ nonst = ydict{3};
 nonst = nonst(findstrings(ynames,ydict{1}),:);
 
 % load data
-datafname = '../../data/output/dataset.csv';
+datafname = '../data/output/dataset.csv';
 data.Nm = length(mnames);
 data.names = [mnames ynames];
 d = importdata(datafname); dat = d.data; txt = d.colheaders;

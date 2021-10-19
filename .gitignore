@@ -1,5 +1,6 @@
 *.xlsx
 *.xls
+*.csv
 !dataset.xlsx
 !dataset.xls
 aux.*

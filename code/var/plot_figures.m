@@ -6,7 +6,7 @@ load('main_est.mat');
 tic
 selVars = (1:7)';
 selPeriods = 1:36;
-maxIdx = 18;
+maxIdx = 24;
 dumStrong = 0;
 clear table
 hypT = table;
