@@ -40,13 +40,13 @@ aux.unemp = aux{:,2};
 aux = aux(:,[end-1, end]);
 data = mergeTimeTables(data, aux);
 
-aux = readtable('input/eur_usd.xls');
-aux.date = generateTime(1999, 1, 2019, 12);
-aux.eur_usd = aux{:,2};
-aux = aux(:,[end-1, end]);
+aux = readtable('output/rates.xlsx');
 data = mergeTimeTables(data, aux);
 
-aux = readtable('output/rates.xlsx');
+aux = readtable('output/fx.csv');
+data = mergeTimeTables(data, aux);
+
+aux = readtable('output/neer_ex.xlsx');
 data = mergeTimeTables(data, aux);
 
 own_inerp = readtable('interp/output/interpolated.xlsx');
@@ -69,7 +69,7 @@ aux.jk_gdp = exp(jk.ea_rgdp/100);
 aux.jk_def = exp(jk.ea_gdpdef/100);
 data = mergeTimeTables(data, aux);
 
-noLog = {'time', 'spr_nfc_bund_ea', 'spr_bk_bund_ea', 'ice', 'unemp','r1y_us', 'r1y_eu', 'rstar'};
+noLog = {'time', 'spr_nfc_bund_ea', 'spr_bk_bund_ea', 'ice', 'unemp','r1y_us', 'r1y_eu', 'rstar', 'r1y_au', 'r1y_ca', 'r1y_gb', 'r1y_jp', 'r1y_ko', 'r1y_se'};
 for ii = 1:size(data,2)
     colnames = data.Properties.VariableNames;
     if ~any(strcmp(string(colnames(ii)), noLog))

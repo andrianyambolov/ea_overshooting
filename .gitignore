@@ -1,6 +1,8 @@
 *.xlsx
 *.xls
 *.csv
+!dataset.csv
+!ydict.csv
 !dataset.xlsx
 !dataset.xls
 aux.*

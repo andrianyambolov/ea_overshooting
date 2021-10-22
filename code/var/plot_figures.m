@@ -1,17 +1,19 @@
-clear
-close all
-% clc
-
-load('main_est.mat');
+% clear
+% close all
+% % clc
+% 
+% baseName = 'ca';
+% load(['estimation/', baseName,'_mp_1999m01-2019m12_chol.mat']);
 tic
-selVars = (1:7)';
-selPeriods = 1:36;
-maxIdx = 24;
+selVars = (1:size(data.y,2))';
+selPeriods = 1:37;
+maxIdx = 19;
 dumStrong = 0;
 clear table
 hypT = table;
-hypT.h = selPeriods';
-plotFig = 1;
+hypT.h = selPeriods'-1;
+plotFig = 0;
+sPos = 7;
 
 %% Marginal
 if plotFig
@@ -36,7 +38,7 @@ IRF = reshape(IRF, size(IRF,1) * size(IRF,2), size(IRF,3))';
 IRFcred = IRFcred';
 IRFcred = reshape(IRFcred, length(selVars), length(selPeriods), []);
 
-sIrf = squeeze(IRFcred(6,:,:))';
+sIrf = squeeze(IRFcred(sPos,:,:))';
 
 [share, selHump] = hypothesisHump(sIrf, maxIdx, dumStrong);
 
@@ -62,7 +64,7 @@ end
 
 
 %% Joint simple
-selVars = (6)';
+selVars = (sPos)';
 IRF = squeeze(irfs_draws(:,1,:,:));
 IRF = IRF(selVars, selPeriods, :);
 IRF = reshape(IRF, size(IRF,1) * size(IRF,2), size(IRF,3))';
@@ -96,5 +98,6 @@ for tt = selPeriods
     hypT.simple_hump(tt) = hypothesisHump(sIrf, tt, dumStrong);
     hypT.simple_max(tt) = hypothesisMax(sIrf, tt);
 end
-disp(hypT);
+disp(hypT(1:6:end,:));
+misc;
 toc

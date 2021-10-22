@@ -7,18 +7,19 @@
 % The different results in the paper can be obtained by uncommenting the
 % appropriate lines.
 rng('shuffle');
+
 clear all
 close all
 
 addpath(genpath('toolbox/'));
 
 % SAMPLE AND DATA: spl, modname, addvar
-spl = [1999 1; 2007 12];
+spl = [1999 1; 2019 12];
 %spl = [1984 2; 2008 12];% Dec2008 ZLB reached
 %spl = [1990 2; 2016 12];% Feb1999 surprises start
 %spl = [1979 7; 2016 12];% GertlerKaradi2015 sample 
 
-modname = 'us1'; %'us1','ea1','us2','ea2'
+modname = 'ca'; %'us1','ea1','us2','ea2'
 addvar = ''; %'exp_gdp_12m','exp_cpi_12m','bkeven05','gs10','sven5f5'
 
 % IDENTIFICATION: idscheme, mnames
@@ -57,7 +58,7 @@ ymdif = @(x1,x2) (x2(1)-x1(1))*12+x2(2)-x1(2);
 findym = @(x,t) find(abs(t-ym2t(x))<1e-6); % find [year month] in time vector t
 
 % Gibbs sampler settings
-gssettings.ndraws = 4000;
+gssettings.ndraws = 20000;
 gssettings.burnin = 4000;
 gssettings.saveevery = 1;
 gssettings.computemarglik = 0;
@@ -78,19 +79,30 @@ mnames_nice = applydictregexp(mnames, mdict);
 mylimits = nan(length(mnames),2);
 
 % define y
-ny1 = 6;
+
 switch modname
-    case 'us1'
+    case 'baseline'
         ynames = {'r1y_eu','gdp','def','ice', 'neer', 'rstar'};
-    case 'us2'
-        ynames = {'gs1','logsp500','us_ip','us_cpi','ebpnew'};
-    case 'ea1'
-        ynames = {'de1y_haver','stoxx50','ea_rgdp','ea_gdpdef','ea_bbb_oas_all_fred'};
-    case 'ea2'
-        ynames = {'de1y_haver','stoxx50','ea_ip_excl_constr','hicp','ea_bbb_oas_all_fred'};
+    case 'industrial'
+        ynames = {'r1y_eu','iprod','cpi','ice', 'neer', 'rstar'};
+    case 'us'
+        ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_us', 'fx_us', 'r1y_us'};
+    case 'gb'
+        ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_gb', 'fx_gb', 'r1y_gb'};
+    case 'jp'
+        ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_jp', 'fx_jp', 'r1y_jp'};
+    case 'se'
+        ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_se', 'fx_se', 'r1y_se'};
+    case 'ca'
+        ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_ca', 'fx_ca', 'r1y_ca'};
+    case 'au'
+        ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_au', 'fx_au', 'r1y_au'};
+    case 'ko'
+        ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_kr', 'fx_kr', 'r1y_ko'};
     otherwise
         disp(modname), error('unknown modname');
 end
+ny1 = length(ynames);
 
 if ~isempty(addvar)
     try
@@ -144,7 +156,7 @@ mprint(table,in)
 
 % complete the minnesota prior
 prior.minnesota.mvector = [zeros(data.Nm,1); nonst];
-
+% prior.minnesota.mvector = [0;ones(ny1,1)];
 % replace NaNs with zeros in the initial condition
 temp = data.y(1:prior.lags,:); temp(isnan(temp)) = 0; data.y(1:prior.lags,:) = temp; 
 
@@ -231,33 +243,8 @@ transf = nan(N,2);
 % print out the impact responses
 table_irf(irfs_draws, ss, 1, varnames, qtoplot(1:3));
 table_irf(irfs_draws, ss, 1, varnames, qtoplot([1 4 5]));
-
-save('main_est.mat');
-
-% plot the irfs
-% hh = plot_irfs_draws(irfs_draws, data.Nm+1:min(N,data.Nm+ny1), ss, varnames_nice, varnames, shocknames_nice, idscheme, qtoplot, [0 0 1], '', ylimits, transf); align_Ylabels(hh); saveTightFigure(hh,[fname '_irfy1'],'pdf')
-% %hh = plot_irfs_draws(irfs_draws, data.Nm+ny1+1:min(N,data.Nm+2*ny1), ss, varnames_nice, varnames, shocknames_nice, idscheme, qtoplot, [0 0 1], '', ylimits); align_Ylabels(hh); saveTightFigure(hh,[fname '_irfy2'],'pdf')
-% %hh = plot_irfs_draws(irfs_draws, 1:N, ss, varnames_nice, varnames, shocknames_nice, idscheme, qtoplot, [0 0 1], '', ylimits); align_Ylabels(hh); saveTightFigure(hh,[fname '_irfmy'],'pdf')
+plot_figures;
+% save([fname,'.mat']);
 % 
-% if 0 % save the ylimits
-%     hh = plot_irfs_draws(irfs_draws, 1:N, ss, varnames_nice, varnames, shocknames_nice, idscheme, qtoplot, [0 0 1], '', ylimits, transf); align_Ylabels(hh);
-%     ylimits = cell2mat(get(hh.Children,'Ylim')); ylimits = ylimits(1:max(ss):N*max(ss),:); ylimits = flipud(ylimits);
-%     save([fname '_ylimits.mat'],'ylimits');
-% end
-% 
-% if ~isempty(addvar)
-%     ylimits = [mylimits; yylimits];
-%     varstoplot = findstrings(addvar,varnames);
-%     hh = plot_irfs_draws(irfs_draws, varstoplot, ss, varnames_nice, varnames, shocknames_nice, idscheme, qtoplot, [0 0 1], '', ylimits);
-%     saveTightFigure(hh,[fname '_addvar'],'pdf')
-% end
-% 
-% if exist('irfs_l_draws','var')
-% credibility = [0.68 0.9];
-% hh = plot_irfs_draws_robust(irfs_draws, irfs_l_draws, irfs_u_draws, data.Nm+1:min(N,data.Nm+ny1), ss, varnames_nice, shocknames_nice, credibility, [0 0 1]); align_Ylabels(hh); saveTightFigure(hh,[fname '_rirfy1'],'pdf')
-% hh = plot_irfs_draws_robust(irfs_draws, irfs_l_draws, irfs_u_draws, data.Nm+ny1+1:N, ss, varnames_nice, shocknames_nice, credibility, [0 0 1]); align_Ylabels(hh); saveTightFigure(hh,[fname '_rirfy2'],'pdf')
-% %hh = plot_irfs_draws_robust(irfs_draws, irfs_l_draws, irfs_u_draws, 5:6, ss, varnames_nice, shocknames_nice, idscheme, credibility, [1 0 1]); align_Ylabels(hh); saveTightFigure(hh,[fname '_rirfyipcpi'],'pdf')
-% end
-
-diary off
+% diary off
 

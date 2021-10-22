@@ -40,7 +40,7 @@ rstar = rates{:,2:end-1}.*w{:,2:end};
 rstar = sum(rstar,2);
 
 rates.rstar = rstar;
-rates(:,2:7) = [];
+% rates(:,2:7) = [];
 
 writetable(rates, 'output/rates.xlsx', 'WriteMode', 'overwrite');
 
