@@ -6,7 +6,7 @@
 % load(['estimation/', baseName,'_mp_1999m01-2019m12_chol.mat']);
 tic
 selVars = (1:size(data.y,2))';
-selPeriods = 1:37;
+selPeriods = 1:49;
 maxIdx = 19;
 dumStrong = 0;
 clear table

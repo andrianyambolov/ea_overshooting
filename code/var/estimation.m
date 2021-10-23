@@ -59,7 +59,7 @@ findym = @(x,t) find(abs(t-ym2t(x))<1e-6); % find [year month] in time vector t
 
 % Gibbs sampler settings
 gssettings.ndraws = 20000;
-gssettings.burnin = 4000;
+gssettings.burnin = 10000;
 gssettings.saveevery = 1;
 gssettings.computemarglik = 0;
 
