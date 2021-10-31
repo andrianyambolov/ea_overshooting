@@ -13,13 +13,15 @@ close all
 
 addpath(genpath('toolbox/'));
 
+getVarDec = 0;
+
 % SAMPLE AND DATA: spl, modname, addvar
 spl = [1999 1; 2019 12];
 %spl = [1984 2; 2008 12];% Dec2008 ZLB reached
 %spl = [1990 2; 2016 12];% Feb1999 surprises start
 %spl = [1979 7; 2016 12];% GertlerKaradi2015 sample 
 
-modname = 'ca'; %'us1','ea1','us2','ea2'
+modname = 'baseline'; %'us1','ea1','us2','ea2'
 addvar = ''; %'exp_gdp_12m','exp_cpi_12m','bkeven05','gs10','sven5f5'
 
 % IDENTIFICATION: idscheme, mnames
@@ -58,8 +60,8 @@ ymdif = @(x1,x2) (x2(1)-x1(1))*12+x2(2)-x1(2);
 findym = @(x,t) find(abs(t-ym2t(x))<1e-6); % find [year month] in time vector t
 
 % Gibbs sampler settings
-gssettings.ndraws = 20000;
-gssettings.burnin = 10000;
+gssettings.ndraws = 10000;
+gssettings.burnin = 4000;
 gssettings.saveevery = 1;
 gssettings.computemarglik = 0;
 
@@ -83,7 +85,7 @@ mylimits = nan(length(mnames),2);
 switch modname
     case 'baseline'
         ynames = {'r1y_eu','gdp','def','ice', 'neer', 'rstar'};
-    case 'industrial'
+    case 'baseline_industrial'
         ynames = {'r1y_eu','iprod','cpi','ice', 'neer', 'rstar'};
     case 'us'
         ynames = {'r1y_eu','gdp','def','ice', 'neer_ex_us', 'fx_us', 'r1y_us'};
@@ -230,9 +232,10 @@ end
 
 %% reporting
 
-% report variance decompositon
-vdec_mean = table_vdecomp(irfs_draws, 1:N, ss, data.names, shocknames, 24);
-
+if getVarDecomp == 1
+    % report variance decompositon
+    vdec_mean = table_vdecomp(irfs_draws, 1:N, ss, data.names, shocknames, 24);
+end
 % report the irfs:
 qtoplot = [0.5 0.16 0.84 0.05 0.95]; % quantiles to plot
 varnames = [mnames, ynames]; varnames_nice = [mnames_nice ynames_nice]; shocknames_nice = shocknames;
@@ -241,10 +244,12 @@ ylimits = [];
 transf = nan(N,2);
 
 % print out the impact responses
-table_irf(irfs_draws, ss, 1, varnames, qtoplot(1:3));
-table_irf(irfs_draws, ss, 1, varnames, qtoplot([1 4 5]));
-plot_figures;
-% save([fname,'.mat']);
+if getVarDecomp == 1
+    table_irf(irfs_draws, ss, 1, varnames, qtoplot(1:3));
+    table_irf(irfs_draws, ss, 1, varnames, qtoplot([1 4 5]));
+end
+% plot_figures;
+save([fname,'.mat']);
 % 
 % diary off
 
